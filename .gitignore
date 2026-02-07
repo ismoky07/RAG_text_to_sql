@@ -1,6 +1,17 @@
 # Environment
 .env
 
+# Skills
+skills/__pycache__/
+skills/*.py[cod]
+skills/$py.class
+skills/*.so
+skills/.Python
+skills/venv/
+skills/env/
+skills/.venv/
+skills/
+.claude/
 # Python
 __pycache__/
 *.py[cod]
