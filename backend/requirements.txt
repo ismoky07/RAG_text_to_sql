@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+psycopg2-binary
+agno
+mistralai
+sqlalchemy
+psycopg[binary]
+pgvector
+sentence-transformers
+chonkie[semantic]
+openai
+huggingface-hub
+transformers
+tokenizers
