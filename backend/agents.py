@@ -34,7 +34,6 @@ load_dotenv()
 
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 DB_URL = os.getenv("DATABASE_URL")
-DB_URL_PSYCOPG2 = os.getenv("DATABASE_URL_PSYCOPG2")
 KNOWLEDGE_PATH = Path(__file__).parent.parent / "knowledge" / "schema_docs.md"
 
 
@@ -240,7 +239,7 @@ def build_sql_generator_instructions(allowed_tables: list[str]) -> str:
     disallowed = ALL_TABLES - allowed_set
     disallowed_note = ""
     if disallowed:
-        disallowed_note = f"\n\n    INTERDIT : Tu n'as PAS accès aux tables suivantes : {', '.join(sorted(disallowed))}. Ne génère JAMAIS de SQL les référençant."
+        disallowed_note = f"\n\n    INTERDIT : Tu n'as PAS accès aux tables suivantes : {', '.join(sorted(disallowed))}. Ne génère JAMAIS de SQL les référençant. Si la question concerne une table interdite, retourne UNIQUEMENT : REJETÉE : accès non autorisé à cette table. Ne substitue JAMAIS par une autre table."
 
     return f"""À partir de l'intention analysée et du contexte schéma fourni, génère UNE requête SQL PostgreSQL.
 
@@ -297,6 +296,38 @@ def extract_table_names(sql: str) -> set[str]:
         for match in re.findall(pattern, sql, re.IGNORECASE):
             tables.add(match.lower())
     return tables & ALL_TABLES
+
+
+# Mots-clés associés à chaque table (pour détection dans la question utilisateur)
+TABLE_KEYWORDS = {
+    "commandes": [
+        r"\bcommandes?\b", r"\bcommandé", r"\bachats?\b", r"\bacheté",
+        r"\bventes?\b", r"\bvendu", r"\bchiffre\s+d.affaires?\b",
+        r"\bmontant", r"\bfactur", r"\bpanier", r"\blivr",
+        r"\ben.cours\b", r"\bannul", r"\bcompletee?\b",
+    ],
+    "clients": [
+        r"\bclients?\b", r"\butilisateurs?\b", r"\binscrits?\b",
+        r"\binscription", r"\bactifs?\b", r"\binactifs?\b",
+        r"\bville\b", r"\bemail\b",
+    ],
+    "produits": [
+        r"\bproduits?\b", r"\barticles?\b", r"\bcatégorie",
+        r"\bcategorie", r"\bprix\b", r"\bcher\b", r"\bmoins\s+cher",
+    ],
+}
+
+
+def detect_requested_tables(question: str) -> set[str]:
+    """Détecte les tables référencées dans la question de l'utilisateur."""
+    question_lower = question.lower()
+    detected = set()
+    for table, keywords in TABLE_KEYWORDS.items():
+        for keyword in keywords:
+            if re.search(keyword, question_lower):
+                detected.add(table)
+                break
+    return detected
 
 
 def extract_sql(text: str) -> str:
@@ -421,6 +452,17 @@ def run_pipeline(question: str, session_id: str | None = None, allowed_tables: l
     """Exécute le pipeline Text-to-SQL via un Workflow Agno avec filtrage RBAC."""
     if allowed_tables is None:
         allowed_tables = list(ALL_TABLES)
+
+    # Pré-check : blocage strict si la question cible une table non autorisée
+    requested = detect_requested_tables(question)
+    if requested:
+        forbidden = requested - set(allowed_tables)
+        if forbidden:
+            table_names = ", ".join(sorted(forbidden))
+            return {
+                "response": f"Accès refusé : vous n'avez pas la permission d'accéder aux données suivantes : **{table_names}**. Contactez votre administrateur pour obtenir les droits nécessaires.",
+                "sql_query": None,
+            }
 
     state = PipelineState(allowed_tables, session_id)
 
