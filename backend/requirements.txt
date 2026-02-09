@@ -13,3 +13,5 @@ openai
 huggingface-hub
 transformers
 tokenizers
+PyJWT
+bcrypt

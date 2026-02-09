@@ -6,7 +6,9 @@
   padding: 0;
 }
 
-:root {
+/* Dark theme (default) */
+:root,
+[data-theme="dark"] {
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
@@ -30,6 +32,24 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --accent: #059669;
+  --accent-hover: #10b981;
+  --accent-glow: rgba(5, 150, 105, 0.2);
+  --user-bubble: #059669;
+  --bot-bubble: #ffffff;
+  --border: #cbd5e1;
+  --success: #16a34a;
+  --error: #dc2626;
 }
 
 body {

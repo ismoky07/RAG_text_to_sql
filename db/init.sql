@@ -90,6 +90,36 @@ INSERT INTO commandes (client_id, produit_id, quantite, montant_total, date_comm
 (1, 10, 2, 139.98, '2025-02-05', 'en_cours');
 
 -- ============================================
+-- TABLE UTILISATEURS (Authentification JWT)
+-- ============================================
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    email VARCHAR(200) UNIQUE NOT NULL,
+    hashed_password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'user',
+    allowed_tables JSONB NOT NULL DEFAULT '["clients", "produits", "commandes"]',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ============================================
+-- TABLE HISTORIQUE DES CONVERSATIONS
+-- ============================================
+
+CREATE TABLE conversation_history (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(100) NOT NULL,
+    user_id INTEGER REFERENCES users(id),
+    question TEXT NOT NULL,
+    response TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_history_session ON conversation_history(session_id);
+CREATE INDEX idx_history_date ON conversation_history(created_at DESC);
+
+-- ============================================
 -- TABLE PGVECTOR (pour le RAG Schema)
 -- Stocke les descriptions de la base, pas les données
 -- ============================================
