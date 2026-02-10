@@ -133,6 +133,101 @@ Question → [Guardrails] → [RBAC Pré-check]
 
 ---
 
+## Diagramme de cas d'utilisation
+
+```mermaid
+graph LR
+    User((User))
+    Admin((Admin))
+
+    User --- UC1[S'inscrire]
+    User --- UC2[Se connecter]
+    User --- UC3[Poser une question<br/>en langage naturel]
+    User --- UC4[Voir la requête SQL générée]
+    User --- UC5[Exporter les résultats en CSV]
+    User --- UC6[Consulter son historique]
+    User --- UC7[Supprimer son historique]
+    User --- UC8[Changer de thème<br/>dark / light]
+    User --- UC9[Se déconnecter]
+
+    Admin --- UC10[Voir la liste<br/>des utilisateurs]
+    Admin --- UC11[Modifier le rôle<br/>d'un utilisateur]
+    Admin --- UC12[Modifier les tables<br/>autorisées d'un utilisateur]
+
+    Admin -.->|hérite de| User
+
+    style User fill:#10b981,stroke:#059669,color:#fff
+    style Admin fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style UC1 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC2 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC3 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC4 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC5 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC6 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC7 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC8 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC9 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style UC10 fill:#1e293b,stroke:#8b5cf6,color:#f1f5f9
+    style UC11 fill:#1e293b,stroke:#8b5cf6,color:#f1f5f9
+    style UC12 fill:#1e293b,stroke:#8b5cf6,color:#f1f5f9
+```
+
+---
+
+## Flux : Poser une question
+
+![Flux poser une question](docs/screenshot/flowAgent.png)
+
+---
+
+## Flux : Administration (RBAC)
+
+```mermaid
+flowchart TD
+    A([Admin connecté]) --> B[Clic bouton Shield]
+    B --> C[GET /api/admin/users<br/>Charger la liste]
+    C --> D[Liste des utilisateurs]
+
+    D --> E[Modifier le rôle]
+    D --> F[Modifier les tables]
+
+    E --> E1{Soi-même ?}
+    E1 -->|OUI| E2[Désactivé]
+    E1 -->|NON| E3[Select : admin / user]
+    E3 --> E4[PUT /admin/users/id/role]
+
+    F --> F1{Rôle admin ?}
+    F1 -->|OUI| F2[Désactivé : accès total]
+    F1 -->|NON| F3[Checkboxes :<br/>☐ clients ☐ produits ☐ commandes<br/>min. 1 table requise]
+    F3 --> F4[PUT /admin/users/id/tables]
+
+    E4 --> G{Succès ?}
+    F4 --> G
+
+    G -->|OUI| H[✓ Alerte succès]
+    G -->|NON| I[✗ Alerte erreur]
+
+    style A fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style B fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style C fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style D fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style E fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style F fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style E1 fill:#f59e0b,stroke:#d97706,color:#000
+    style F1 fill:#f59e0b,stroke:#d97706,color:#000
+    style G fill:#f59e0b,stroke:#d97706,color:#000
+    style E2 fill:#64748b,stroke:#475569,color:#fff
+    style F2 fill:#64748b,stroke:#475569,color:#fff
+    style E3 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style E4 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style F3 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style F4 fill:#1e293b,stroke:#334155,color:#f1f5f9
+    style H fill:#22c55e,stroke:#16a34a,color:#fff
+    style I fill:#ef4444,stroke:#dc2626,color:#fff
+```
+
+---
+
 ## Structure du projet
 
 ```
