@@ -60,7 +60,7 @@ Assistant IA qui transforme vos questions en langage naturel en requêtes SQL, l
 
 ```bash
 git clone <repository-url>
-cd Chatbot_RAG_Hybride
+cd Chatbot_RAG_Text_to_SQL
 ```
 
 ### 2. Configurer
@@ -231,7 +231,7 @@ flowchart TD
 ## Structure du projet
 
 ```
-Chatbot_RAG_Hybride/
+Chatbot_RAG_Text_to_SQL/
 ├── docker-compose.yml          # Orchestration 3 services
 ├── .env                        # Clés API (non versionné)
 ├── db/
